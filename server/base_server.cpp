@@ -349,7 +349,9 @@ void JsonCommandServer::BaseServer::processMessage(QTcpSocket* _socket, const QS
             }
         }
     } else {
-        addErrorMessage("Falha na execução do comando: " + message);
+        if (message.size() > 0) {
+            addErrorMessage("Falha na execução do comando: <" + message + ">");
+        }
     }
 }
 
