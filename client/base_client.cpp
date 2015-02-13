@@ -102,6 +102,7 @@ void JsonCommandServer::BaseClient::clientClose()
     ips_info_.clear();
 
     this->updateInfos();
+
     clearMessages();
     enableClient();
 }
@@ -188,6 +189,7 @@ void JsonCommandServer::BaseClient::clientRequestNewInitialMessage()
     client_tcp_socket_->abort();
     client_tcp_socket_->connectToHost(myServerIP(),
                                  myServerPort());
+    clientIdentify();
 }
 
 void JsonCommandServer::BaseClient::clientReadMessage()
@@ -302,14 +304,10 @@ QJsonArray JsonCommandServer::BaseClient::createMessage(const QString &message, 
     ok = true;
     QJsonArray out;
     QJsonObject cmd;
-    QJsonObject args;
 
     if (message == "close") {
         cmd.insert("type", CLOSE);
     } else {
-        args["message"] = message;
-
-
         cmd.insert("id", newKey());
         cmd.insert("type", type_message);
         cmd.insert("time", QTime::currentTime().toString());
@@ -318,7 +316,7 @@ QJsonArray JsonCommandServer::BaseClient::createMessage(const QString &message, 
         cmd.insert("group_client", this->group());
         cmd.insert("name_client", this->name());
         cmd.insert("type_client", this->type());
-        cmd.insert("args", args);
+        cmd.insert("message", message);
     }
 
     out.append(cmd);
@@ -359,6 +357,23 @@ QJsonArray JsonCommandServer::BaseClient::createIdentify()
 QJsonArray JsonCommandServer::BaseClient::createPeerList()
 {
     QJsonArray out;
+    QJsonObject cmd;
+
+    cmd.insert("id", newKey());
+    cmd.insert("type", MESSAGE_PEER_LIST);
+    cmd.insert("time", QTime::currentTime().toString());
+    cmd.insert("date", QDate::currentDate().toString());
+
+    QJsonArray peers_array;
+
+    for (int i  = 0; i < peers_.size(); ++i) {
+        peers_array.append(peers_[i]);
+    }
+
+    cmd.insert("peers", peers_array);
+
+    out.append(cmd);
+
     return out;
 }
 
@@ -382,6 +397,32 @@ QJsonArray JsonCommandServer::BaseClient::createMessageTo(const QString &from, c
 
     out.append(cmd);
     return out;
+}
+
+QJsonArray JsonCommandServer::BaseClient::createCommandTo(const QString &from, const QString &to, const QJsonArray & _cmd)
+{
+    QJsonArray out;
+    QJsonObject cmd;
+
+    cmd.insert("id", newKey());
+    cmd.insert("type", CMD_TO);
+    cmd.insert("time", QTime::currentTime().toString());
+    cmd.insert("date", QDate::currentDate().toString());
+    cmd.insert("id_client", this->id());
+    cmd.insert("group_client", this->group());
+    cmd.insert("name_client", this->name());
+    cmd.insert("type_client", this->type());
+    cmd.insert("description_client", this->description());
+    cmd.insert("from", from);
+    cmd.insert("to", to);
+    cmd.insert("cmd", _cmd);
+
+    out.append(cmd);
+    return out;
+}
+
+void JsonCommandServer::BaseClient::executeCommand(const QJsonArray &cmd)
+{
 
 }
 
@@ -413,9 +454,11 @@ void JsonCommandServer::BaseClient::processMessage(QTcpSocket *_socket, const QS
             int type = -1;
             if (cmd.contains("type")) {
                 type = cmd["type"].toInt();
+            } else {
+                continue;
             }
 
-            cmd.insert("IP", _socket->peerAddress().toString());
+            cmd.insert("ip", _socket->peerAddress().toString());
             cmd.insert("port", QString::number(_socket->peerPort()));
 
             if (type == -1) continue;
@@ -423,11 +466,7 @@ void JsonCommandServer::BaseClient::processMessage(QTcpSocket *_socket, const QS
             if (type == CLOSE) {
                 clientClose();
             } else {
-                if (cmd.contains("args")) {
-                    execute_command(type, this, cmd["args"].toObject(), cmd);
-                } else {
-                    execute_command(type, this, cmd, cmd);
-                }
+                execute_command(type, this, cmd);
             }
         }
     } else {
@@ -454,6 +493,11 @@ void JsonCommandServer::BaseClient::writeMessage(QTcpSocket *_socket, const QStr
     _socket->write(block);
 }
 
+void JsonCommandServer::BaseClient::addPeerList(const QList<QString> &peers)
+{
+    peers_ = peers;
+}
+
 void JsonCommandServer::BaseClient::sendMessageTo(const QString& from, const QString &to, const QString &message)
 {
     if (client_tcp_socket_) {
@@ -462,6 +506,13 @@ void JsonCommandServer::BaseClient::sendMessageTo(const QString& from, const QSt
         } else {
             writeMessage(client_tcp_socket_, createMessageTo(from, to, message));
         }
+    }
+}
+
+void JsonCommandServer::BaseClient::sendCommandTo(const QString &from, const QString &to, const QJsonArray &cmd)
+{
+    if (client_tcp_socket_) {
+        writeMessage(client_tcp_socket_, createCommandTo(from, to, cmd));
     }
 }
 

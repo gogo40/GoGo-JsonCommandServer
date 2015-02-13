@@ -36,27 +36,30 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "server/base_server.h"
 #include "client/base_client.h"
 
-static const JsonCommandServer::processCmd __g_default_server_commands[] = {
+#include "jsoncommandserver.h"
+
+static const JsonCommandServer::ProcessCmd __g_default_server_commands__[] = {
     JsonCommandServer::DefaultCommands::print_message,
     JsonCommandServer::DefaultCommands::print_message_status,
     JsonCommandServer::DefaultCommands::print_message_error,
     JsonCommandServer::DefaultCommands::process_identify,
     JsonCommandServer::DefaultCommands::process_peers_list,
-    JsonCommandServer::DefaultCommands::send_message_to
+    JsonCommandServer::DefaultCommands::send_message_to,
+    JsonCommandServer::DefaultCommands::send_cmd_to
 };
 
-void JsonCommandServer::execute_command(int cmd_type, JsonCommandServer::BaseController* w,
-                                        const QJsonObject& cmd_args,
-                                        const QJsonObject& full_command)
+void JsonCommandServer::execute_command(int cmd_type, BaseController* w,
+                                        const QJsonObject& command)
 {
     if (cmd_type < N_CMDS) {
-        __g_default_server_commands[cmd_type](w, cmd_args, full_command);
+        __g_default_server_commands__[cmd_type](w, command);
+    } else {
+        JsonCommandServer::executeCommand(cmd_type, w, command);
     }
 }
 
 
-void JsonCommandServer::DefaultCommands::print_message(JsonCommandServer::BaseController* w,
-                                                       const QJsonObject& cmd_args,
+void JsonCommandServer::DefaultCommands::print_message(BaseController* w,
                                                        const QJsonObject& full_command)
 {
     QString msg;
@@ -69,8 +72,8 @@ void JsonCommandServer::DefaultCommands::print_message(JsonCommandServer::BaseCo
 
     msg += "> ";
 
-    if (cmd_args.contains("message")) {
-        msg += cmd_args["message"].toString();
+    if (full_command.contains("message")) {
+        msg += full_command["message"].toString();
     }
 
     msg += "\n";
@@ -78,8 +81,7 @@ void JsonCommandServer::DefaultCommands::print_message(JsonCommandServer::BaseCo
     w->addClientMessage(msg);
 }
 
-void JsonCommandServer::DefaultCommands::print_message_status(JsonCommandServer::BaseController* w,
-                                                              const QJsonObject& cmd_args,
+void JsonCommandServer::DefaultCommands::print_message_status(BaseController* w,
                                                               const QJsonObject& full_command)
 {
     QString msg;
@@ -100,8 +102,8 @@ void JsonCommandServer::DefaultCommands::print_message_status(JsonCommandServer:
 
     msg += "> ";
 
-    if (cmd_args.contains("message")) {
-        msg += cmd_args["message"].toString();
+    if (full_command.contains("message")) {
+        msg += full_command["message"].toString();
     }
 
     msg += "\n";
@@ -110,8 +112,7 @@ void JsonCommandServer::DefaultCommands::print_message_status(JsonCommandServer:
 }
 
 
-void JsonCommandServer::DefaultCommands::print_message_error(JsonCommandServer::BaseController* w,
-                                                             const QJsonObject& cmd_args,
+void JsonCommandServer::DefaultCommands::print_message_error(BaseController* w,
                                                              const QJsonObject& full_command)
 {
     QString msg;
@@ -132,8 +133,8 @@ void JsonCommandServer::DefaultCommands::print_message_error(JsonCommandServer::
 
     msg += "> ";
 
-    if (cmd_args.contains("message")) {
-        msg += cmd_args["message"].toString();
+    if (full_command.contains("message")) {
+        msg += full_command["message"].toString();
     }
 
     msg += "\n";
@@ -141,15 +142,13 @@ void JsonCommandServer::DefaultCommands::print_message_error(JsonCommandServer::
     w->addErrorMessage(msg);
 }
 
-void JsonCommandServer::DefaultCommands::process_identify(JsonCommandServer::BaseController* w,
-                                                          const QJsonObject& cmd_args,
+void JsonCommandServer::DefaultCommands::process_identify(BaseController* w,
                                                           const QJsonObject& full_command)
 {
     w->addIdentify(full_command);
 }
 
-void JsonCommandServer::DefaultCommands::process_peers_list(JsonCommandServer::BaseController* w,
-                                                            const QJsonObject& cmd_args,
+void JsonCommandServer::DefaultCommands::process_peers_list(BaseController* w,
                                                             const QJsonObject& full_command)
 {
     if (full_command.contains("peers")) {
@@ -166,8 +165,7 @@ void JsonCommandServer::DefaultCommands::process_peers_list(JsonCommandServer::B
     }
 }
 
-void JsonCommandServer::DefaultCommands::send_message_to(JsonCommandServer::BaseController* w,
-                                                         const QJsonObject& cmd_args,
+void JsonCommandServer::DefaultCommands::send_message_to(BaseController* w,
                                                          const QJsonObject& full_command)
 {
     if (full_command.contains("from")) {
@@ -181,6 +179,23 @@ void JsonCommandServer::DefaultCommands::send_message_to(JsonCommandServer::Base
         }
     }
 
+}
+
+void JsonCommandServer::DefaultCommands::send_cmd_to(BaseController* w,
+                                                     const QJsonObject& full_command)
+{
+    if (full_command.contains("from")) {
+        QString from = full_command["from"].toString();
+        if (full_command.contains("to")) {
+            QString to = full_command["to"].toString();
+
+            if (full_command.contains("cmd")) {
+                if (full_command["cmd"].isArray()) {
+                    w->sendCommandTo(from, to, full_command["cmd"].toArray());
+                }
+            }
+        }
+    }
 }
 
 JsonCommandServer::BaseController::BaseController()

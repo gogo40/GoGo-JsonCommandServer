@@ -89,6 +89,7 @@ public slots:
     virtual void addPeerList(const QList<QString>& peers) = 0;
 
     virtual void sendMessageTo(const QString& from, const QString& to, const QString& message);
+    virtual void sendCommandTo(const QString& from, const QString& to, const QJsonArray& cmd);
 
     virtual void clearMessages() = 0;
 
@@ -109,6 +110,10 @@ public slots:
     QJsonArray createPeerList();
     QJsonArray createIdentify();
     QJsonArray createMessageTo(const QString& from, const QString& to, const QString &message);
+    QJsonArray createCommandTo(const QString& from, const QString& to, const QJsonArray &cmd);
+
+    virtual void executeCommand(const QJsonArray& cmd);
+
 
     void setPortServer(int _port_server);
     void setIPServer(const QString& _IP);

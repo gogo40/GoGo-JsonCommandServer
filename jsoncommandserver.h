@@ -33,6 +33,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define JSONCOMMANDSERVER_H
 
 #include "jsoncommandserver_global.h"
+#include "server/commands_controller.h"
+
+#include <map>
 
 namespace JsonCommandServer {
 
@@ -42,6 +45,12 @@ class JSONCOMMANDSERVERSHARED_EXPORT JsonCommandServer
 public:
     JsonCommandServer();
     virtual ~JsonCommandServer();
+
+    static void executeCommand(int type, BaseController* w, const QJsonObject& cmd);
+    static int addCommad(int type, ProcessCmd cm);
+
+private:
+    static std::map<int, ProcessCmd> user_process_;
 };
 
 } // namespace JsonCommandServer

@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "jsoncommandserver.h"
 
+std::map<int, JsonCommandServer::ProcessCmd> JsonCommandServer::JsonCommandServer::user_process_;
 
 JsonCommandServer::JsonCommandServer::JsonCommandServer()
 {
@@ -39,4 +40,30 @@ JsonCommandServer::JsonCommandServer::JsonCommandServer()
 JsonCommandServer::JsonCommandServer::~JsonCommandServer()
 {
 
+}
+
+void JsonCommandServer::JsonCommandServer::executeCommand(int type, BaseController *w, const QJsonObject &cmd)
+{
+
+    if (type < N_CMDS) {
+        execute_command(type, w, cmd);
+    } else if (user_process_.find(type) != user_process_.end()) {
+        ProcessCmd f = user_process_[type];
+        f(w, cmd);
+    }
+}
+
+int JsonCommandServer::JsonCommandServer::addCommad(int type, ProcessCmd cmd)
+{
+    if (type < N_CMDS) {
+        type = N_CMDS;
+    }
+
+    while (user_process_.find(type) != user_process_.end()) {
+        ++type;
+    }
+
+    user_process_[type] = cmd;
+
+    return type;
 }

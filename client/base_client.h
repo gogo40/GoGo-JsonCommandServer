@@ -90,7 +90,9 @@ public slots:
     QJsonArray createIdentify();
     QJsonArray createPeerList();
     QJsonArray createMessageTo(const QString& from, const QString& to, const QString &message);
+    QJsonArray createCommandTo(const QString& from, const QString& to, const QJsonArray &cmd);
 
+    virtual void executeCommand(const QJsonArray& cmd);
 
     void writeMessage(QTcpSocket* _socket, const QJsonArray& cmd);
     void writeMessage(QTcpSocket* _socket, const QString& message);
@@ -109,9 +111,10 @@ public slots:
     virtual void addStatusMessage(const QString& message) = 0;
     virtual void addErrorMessage(const QString& message) = 0;
     virtual void addIdentify(const QJsonObject& info) = 0;
-    virtual void addPeerList(const QList<QString>& peers) = 0;
+    virtual void addPeerList(const QList<QString>& peers);
 
     virtual void sendMessageTo(const QString& from, const QString& to, const QString& message);
+    virtual void sendCommandTo(const QString& from, const QString& to, const QJsonArray& cmd);
 
     virtual void addNewInfo(const RemoteNodeInfo& new_info);
     virtual void updateInfos() = 0;
@@ -139,6 +142,7 @@ protected:
     int n_messages_;
 
     std::map<QString, std::map<int, RemoteNodeInfo> > ips_info_;
+    QList<QString> peers_;
 };
 
 

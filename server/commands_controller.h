@@ -44,28 +44,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace JsonCommandServer {
 
-enum ServerCommands {
-    MESSAGE_NORMAL = 0,
-    MESSAGE_STATUS = 1,
-    MESSAGE_ERROR = 2,
-    MESSAGE_IDENTIFY = 3,
-    MESSAGE_PEER_LIST = 4,
-    MESSAGE_TO = 5,
-    N_CMDS,
-    CLOSE,
-    NONE
-};
-
-enum EquipamentTypes {
-    MAIN_SERVER = -2,
-    TEST_SERVER = -3
-};
-
-enum EquipamentGroups {
-    GROUP_SERVER = -2,
-    GROUP_CLIENT = -3
-};
-
 class BaseServer;
 
 struct JSONCOMMANDSERVERSHARED_EXPORT RemoteNodeInfo {
@@ -94,13 +72,16 @@ public:
     virtual QJsonArray createIdentify() = 0;
     virtual QJsonArray createPeerList() = 0;
     virtual QJsonArray createMessageTo(const QString& from, const QString& to, const QString &message) = 0;
+    virtual QJsonArray createCommandTo(const QString& from, const QString& to, const QJsonArray &cmd) = 0;
 
     virtual void addClientMessage(const QString& message) = 0;
     virtual void addStatusMessage(const QString& message) = 0;
     virtual void addErrorMessage(const QString& message) = 0;
     virtual void addIdentify(const QJsonObject& info) = 0;
+    virtual void executeCommand(const QJsonArray& cmd) = 0;
 
     virtual void sendMessageTo(const QString& from, const QString& to, const QString& message) = 0;
+    virtual void sendCommandTo(const QString& from, const QString& to, const QJsonArray& cmd) = 0;
 
     virtual void addNewInfo(const RemoteNodeInfo& new_info) = 0;
     virtual void updateInfos() = 0;
@@ -111,20 +92,45 @@ public:
 
 
 namespace DefaultCommands {
-
-    void print_message(BaseController*, const QJsonObject&, const QJsonObject&);
-    void print_message_status(BaseController*, const QJsonObject&, const QJsonObject&);
-    void print_message_error(BaseController*, const QJsonObject&, const QJsonObject&);
-    void process_identify(BaseController*, const QJsonObject&, const QJsonObject&);
-    void process_peers_list(BaseController*, const QJsonObject&, const QJsonObject&);
-    void send_message_to(BaseController*, const QJsonObject&, const QJsonObject&);
-
-
+    void print_message(BaseController*, const QJsonObject&);
+    void print_message_status(BaseController*, const QJsonObject&);
+    void print_message_error(BaseController*, const QJsonObject&);
+    void process_identify(BaseController*, const QJsonObject&);
+    void process_peers_list(BaseController*, const QJsonObject&);
+    void send_message_to(BaseController*, const QJsonObject&);
+    void send_cmd_to(BaseController*, const QJsonObject&);
 }
 
-typedef void (*processCmd)(BaseController*, const QJsonObject&, const QJsonObject&);
+typedef void (*ProcessCmd)(BaseController*, const QJsonObject&);
 
-void JSONCOMMANDSERVERSHARED_EXPORT execute_command(int cmd_type, BaseController* w, const QJsonObject& cmd_args, const QJsonObject& full_command);
+void JSONCOMMANDSERVERSHARED_EXPORT execute_command(int cmd_type,
+                                                    BaseController* w,
+                                                    const QJsonObject& commad);
+
+
+enum ServerCommands {
+    MESSAGE_NORMAL = 0, // SEND NORMAL MESSAGE FROM SERVER TO CLIENT OR FROM CLIENT TO SERVER
+    MESSAGE_STATUS = 1, // SEND STATUS MESSAGE FROM SERVER TO CLIENT OR FROM CLIENT TO SERVER
+    MESSAGE_ERROR = 2, // SEND ERROR MESSAGE FROM SERVER TO CLIENT
+    MESSAGE_IDENTIFY = 3, // SEND INDETIFICATION MESSAGE FROM SERVER TO CLIENT OR FORM CLIENT TO SERVER
+    MESSAGE_PEER_LIST = 4, // SEND LIST OF CONNECTED CLIENTS
+    MESSAGE_TO = 5, // SEND MESSAGE FROM CLIENT A TO CLIENT B, VIA SERVER
+    CMD_TO = 6, // SEND MESSAGE FROM CLIENT A TO CLIENT B, VIA SERVER
+    N_CMDS,
+    CLOSE = -1, // CLOSE CONNECTION
+    NONE = -2
+};
+
+enum EquipamentTypes {
+    MAIN_SERVER = -2,
+    TEST_SERVER = -3
+};
+
+enum EquipamentGroups {
+    GROUP_SERVER = -2,
+    GROUP_CLIENT = -3
+};
+
 
 } // namespace JsonCommandServer
 

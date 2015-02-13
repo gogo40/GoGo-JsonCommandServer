@@ -180,7 +180,6 @@ void JsonCommandServer::BaseServer::sendInitialMessage()
         return;
     }
 
-    addSocket(client_connection);
 
     connect(client_connection, SIGNAL(readyRead()),
             this, SLOT(receiveMessage()));
@@ -198,6 +197,8 @@ void JsonCommandServer::BaseServer::sendInitialMessage()
     }
 
     writeMessage(client_connection, createIdentify());
+
+    addSocket(client_connection);
 }
 
 void JsonCommandServer::BaseServer::receiveMessage()
@@ -282,6 +283,20 @@ void JsonCommandServer::BaseServer::sendMessageTo(const QString& from, const QSt
     addClientMessage(from + " --> " + to + "> " + message);
 }
 
+void JsonCommandServer::BaseServer::sendCommandTo(const QString &from, const QString &to, const QJsonArray &cmd)
+{
+    if (to == "Todos") {
+        broadcastMessage(cmd);
+    } else {
+        QTcpSocket* socket = getPeer(to);
+        if (socket) {
+            writeMessage(socket, cmd);
+        }
+    }
+
+    addStatusMessage("cmd "+ from + " --> " + to + " >> " + QJsonDocument(cmd).toJson());
+}
+
 void JsonCommandServer::BaseServer::displayError(QAbstractSocket::SocketError socketError)
 {
     QTcpSocket* socket = static_cast<QTcpSocket*>(sender());
@@ -329,8 +344,11 @@ void JsonCommandServer::BaseServer::processMessage(QTcpSocket* _socket, const QS
         for (int i  = 0; i < cmds.size(); ++i) {
             QJsonObject cmd = cmds[i].toObject();
             int type = -1;
+
             if (cmd.contains("type")) {
                 type = cmd["type"].toInt();
+            } else {
+                continue;
             }
 
             cmd.insert("ip", _socket->peerAddress().toString());
@@ -342,11 +360,7 @@ void JsonCommandServer::BaseServer::processMessage(QTcpSocket* _socket, const QS
                 eraseSocket(_socket);
                 _socket->disconnectFromHost();
             } else {
-                if (cmd.contains("args")) {
-                    execute_command(type, this, cmd["args"].toObject(), cmd);
-                } else {
-                    execute_command(type, this, cmd, cmd);
-                }
+                execute_command(type, this, cmd);
             }
         }
     } else {
@@ -400,14 +414,10 @@ QJsonArray JsonCommandServer::BaseServer::createMessage(const QString &from, con
     ok = true;
     QJsonArray out;
     QJsonObject cmd;
-    QJsonObject args;
 
     if (message == "close") {
         cmd.insert("type", CLOSE);
     } else {
-        args["message"] = message;
-
-
         cmd.insert("id", newKey());
         cmd.insert("ip", this->myIP());
         cmd.insert("port", this->myPort());
@@ -418,7 +428,7 @@ QJsonArray JsonCommandServer::BaseServer::createMessage(const QString &from, con
         cmd.insert("group_client", this->group());
         cmd.insert("name_client", from);
         cmd.insert("type_client", this->type());
-        cmd.insert("args", args);
+        cmd.insert("message", message);
     }
 
     out.append(cmd);
@@ -432,13 +442,10 @@ QJsonArray JsonCommandServer::BaseServer::createMessage(const QString &message, 
     ok = true;
     QJsonArray out;
     QJsonObject cmd;
-    QJsonObject args;
 
     if (message == "close") {
         cmd.insert("type", CLOSE);
     } else {
-        args["message"] = message;
-
 
         cmd.insert("id", newKey());
         cmd.insert("ip", this->myIP());
@@ -450,7 +457,7 @@ QJsonArray JsonCommandServer::BaseServer::createMessage(const QString &message, 
         cmd.insert("group_client", this->group());
         cmd.insert("name_client", this->name());
         cmd.insert("type_client", this->type());
-        cmd.insert("args", args);
+        cmd.insert("message", message);
     }
 
     out.append(cmd);
@@ -538,6 +545,35 @@ QJsonArray JsonCommandServer::BaseServer::createMessageTo(const QString &from, c
 
     out.append(cmd);
     return out;
+}
+
+QJsonArray JsonCommandServer::BaseServer::createCommandTo(const QString &from, const QString &to, const QJsonArray & _cmd)
+{
+    QJsonArray out;
+    QJsonObject cmd;
+
+    cmd.insert("id", newKey());
+    cmd.insert("ip", this->myIP());
+    cmd.insert("port", this->myPort());
+    cmd.insert("type", CMD_TO);
+    cmd.insert("time", QTime::currentTime().toString());
+    cmd.insert("date", QDate::currentDate().toString());
+    cmd.insert("id_client", this->id());
+    cmd.insert("group_client", this->group());
+    cmd.insert("name_client", this->name());
+    cmd.insert("type_client", this->type());
+    cmd.insert("description_client", this->description());
+    cmd.insert("from", from);
+    cmd.insert("to", to);
+    cmd.insert("cmd", _cmd);
+
+    out.append(cmd);
+    return out;
+}
+
+void JsonCommandServer::BaseServer::executeCommand(const QJsonArray &cmd)
+{
+
 }
 
 void JsonCommandServer::BaseServer::setPortServer(int _port_server)
