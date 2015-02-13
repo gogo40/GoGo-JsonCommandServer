@@ -41,12 +41,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QJsonObject>
 #include <QJsonArray>
 
-#include "server/commands_controller.h"
+#include "commands_controller.h"
 
 
 namespace JsonCommandServer {
 
-class JSONCOMMANDSERVERSHARED_EXPORT BaseClient : public QObject, BaseController {
+class JSONCOMMANDSERVERSHARED_EXPORT BaseClient : public QObject, public BaseController {
     Q_OBJECT
 
 public:

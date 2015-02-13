@@ -32,11 +32,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include "server/commands_controller.h"
-#include "server/base_server.h"
-#include "client/base_client.h"
+#include "commands_controller.h"
 
 #include "jsoncommandserver.h"
+
+#include <QDate>
+#include <QTime>
 
 static const JsonCommandServer::ProcessCmd __g_default_server_commands__[] = {
     JsonCommandServer::DefaultCommands::print_message,

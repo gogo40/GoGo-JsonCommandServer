@@ -130,6 +130,8 @@ void JsonCommandServer::BaseServer::sessionOpened()
         return;
     }
 
+    ip_address_ = QString();
+
     QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
 
     // use the first non-localhost IPv4 address

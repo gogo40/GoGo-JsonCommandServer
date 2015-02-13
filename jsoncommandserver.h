@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define JSONCOMMANDSERVER_H
 
 #include "jsoncommandserver_global.h"
-#include "server/commands_controller.h"
+#include "commands_controller.h"
 
 #include <map>
 
@@ -47,7 +47,7 @@ public:
     virtual ~JsonCommandServer();
 
     static void executeCommand(int type, BaseController* w, const QJsonObject& cmd);
-    static int addCommad(int type, ProcessCmd cm);
+    static int addCommad(ProcessCmd cmd);
 
 private:
     static std::map<int, ProcessCmd> user_process_;

@@ -50,7 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace JsonCommandServer {
 
-class JSONCOMMANDSERVERSHARED_EXPORT BaseServer : public QObject, BaseController {
+class JSONCOMMANDSERVERSHARED_EXPORT BaseServer : public QObject, public BaseController {
     Q_OBJECT
 
 public:
