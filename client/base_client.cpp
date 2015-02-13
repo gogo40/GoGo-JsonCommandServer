@@ -39,7 +39,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static const int N_MAX_SERVER_MESSAGES = 50;
 
 JsonCommandServer::BaseClient::BaseClient(QObject *_parent)
-    : QObject(_parent), BaseController(),
+    : QObject(_parent),
+      BaseController(),
       client_tcp_socket_(0),
       client_current_message_(""),
       client_block_size_(0),

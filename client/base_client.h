@@ -50,8 +50,8 @@ class JSONCOMMANDSERVERSHARED_EXPORT BaseClient : public QObject, BaseController
     Q_OBJECT
 
 public:
-    BaseClient(QObject* _parent);
-    ~BaseClient();
+    BaseClient(QObject* _parent = 0);
+    virtual ~BaseClient();
 
     virtual QString name() = 0;
     virtual QString type() = 0;
@@ -76,7 +76,7 @@ public slots:
     void clientReadMessage();
     void clientDisplayError(QAbstractSocket::SocketError socketError);
     void clientSessionOpened();
-    void clientSendMessage(const QString& _message);
+    virtual void clientSendMessage(const QString& _message);
     void clientIdentify();
 
     QString processMessage(const QString& _message);

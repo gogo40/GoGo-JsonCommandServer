@@ -54,8 +54,8 @@ class JSONCOMMANDSERVERSHARED_EXPORT BaseServer : public QObject, BaseController
     Q_OBJECT
 
 public:
-    BaseServer(QObject* _parent = 0);
-    ~BaseServer();
+    BaseServer(QObject* parent = 0);
+    virtual ~BaseServer();
 
     virtual void initServer();
 

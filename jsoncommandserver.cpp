@@ -35,3 +35,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 JsonCommandServer::JsonCommandServer::JsonCommandServer()
 {
 }
+
+JsonCommandServer::JsonCommandServer::~JsonCommandServer()
+{
+
+}

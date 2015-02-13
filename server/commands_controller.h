@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "jsoncommandserver_global.h"
 
+#include <QObject>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonDocument>

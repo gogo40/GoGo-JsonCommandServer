@@ -41,6 +41,7 @@ class JSONCOMMANDSERVERSHARED_EXPORT JsonCommandServer
 
 public:
     JsonCommandServer();
+    virtual ~JsonCommandServer();
 };
 
 } // namespace JsonCommandServer

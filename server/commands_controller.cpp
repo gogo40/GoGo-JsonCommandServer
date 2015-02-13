@@ -45,7 +45,9 @@ static const JsonCommandServer::processCmd __g_default_server_commands[] = {
     JsonCommandServer::DefaultCommands::send_message_to
 };
 
-void JsonCommandServer::execute_command(int cmd_type, JsonCommandServer::BaseController* w, const QJsonObject& cmd_args, const QJsonObject& full_command)
+void JsonCommandServer::execute_command(int cmd_type, JsonCommandServer::BaseController* w,
+                                        const QJsonObject& cmd_args,
+                                        const QJsonObject& full_command)
 {
     if (cmd_type < N_CMDS) {
         __g_default_server_commands[cmd_type](w, cmd_args, full_command);
@@ -53,7 +55,9 @@ void JsonCommandServer::execute_command(int cmd_type, JsonCommandServer::BaseCon
 }
 
 
-void JsonCommandServer::DefaultCommands::print_message(JsonCommandServer::BaseController* w, const QJsonObject& cmd_args, const QJsonObject& full_command)
+void JsonCommandServer::DefaultCommands::print_message(JsonCommandServer::BaseController* w,
+                                                       const QJsonObject& cmd_args,
+                                                       const QJsonObject& full_command)
 {
     QString msg;
 
@@ -74,7 +78,9 @@ void JsonCommandServer::DefaultCommands::print_message(JsonCommandServer::BaseCo
     w->addClientMessage(msg);
 }
 
-void JsonCommandServer::DefaultCommands::print_message_status(JsonCommandServer::BaseController* w, const QJsonObject& cmd_args, const QJsonObject& full_command)
+void JsonCommandServer::DefaultCommands::print_message_status(JsonCommandServer::BaseController* w,
+                                                              const QJsonObject& cmd_args,
+                                                              const QJsonObject& full_command)
 {
     QString msg;
 
@@ -104,7 +110,9 @@ void JsonCommandServer::DefaultCommands::print_message_status(JsonCommandServer:
 }
 
 
-void JsonCommandServer::DefaultCommands::print_message_error(JsonCommandServer::BaseController* w, const QJsonObject& cmd_args, const QJsonObject& full_command)
+void JsonCommandServer::DefaultCommands::print_message_error(JsonCommandServer::BaseController* w,
+                                                             const QJsonObject& cmd_args,
+                                                             const QJsonObject& full_command)
 {
     QString msg;
 
@@ -133,12 +141,16 @@ void JsonCommandServer::DefaultCommands::print_message_error(JsonCommandServer::
     w->addErrorMessage(msg);
 }
 
-void JsonCommandServer::DefaultCommands::process_identify(JsonCommandServer::BaseController* w, const QJsonObject& cmd_args, const QJsonObject& full_command)
+void JsonCommandServer::DefaultCommands::process_identify(JsonCommandServer::BaseController* w,
+                                                          const QJsonObject& cmd_args,
+                                                          const QJsonObject& full_command)
 {
     w->addIdentify(full_command);
 }
 
-void JsonCommandServer::DefaultCommands::process_peers_list(JsonCommandServer::BaseController* w, const QJsonObject& cmd_args, const QJsonObject& full_command)
+void JsonCommandServer::DefaultCommands::process_peers_list(JsonCommandServer::BaseController* w,
+                                                            const QJsonObject& cmd_args,
+                                                            const QJsonObject& full_command)
 {
     if (full_command.contains("peers")) {
         QList<QString> peers;
@@ -154,7 +166,9 @@ void JsonCommandServer::DefaultCommands::process_peers_list(JsonCommandServer::B
     }
 }
 
-void JsonCommandServer::DefaultCommands::send_message_to(JsonCommandServer::BaseController* w, const QJsonObject& cmd_args, const QJsonObject& full_command)
+void JsonCommandServer::DefaultCommands::send_message_to(JsonCommandServer::BaseController* w,
+                                                         const QJsonObject& cmd_args,
+                                                         const QJsonObject& full_command)
 {
     if (full_command.contains("from")) {
         QString from = full_command["from"].toString();
