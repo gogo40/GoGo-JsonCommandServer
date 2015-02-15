@@ -15,12 +15,12 @@ DEFINES += JSONCOMMANDSERVER_LIBRARY
 
 SOURCES += jsoncommandserver.cpp \
     server/base_server.cpp \
-    server/commands_controller.cpp \
+    commands_controller.cpp \
     client/base_client.cpp
 
 HEADERS += jsoncommandserver.h\
         jsoncommandserver_global.h \
-    server/commands_controller.h \
+    commands_controller.h \
     server/base_server.h \
     client/base_client.h
 
