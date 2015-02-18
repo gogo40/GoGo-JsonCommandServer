@@ -189,7 +189,7 @@ void JsonCommandServer::BaseServer::sendInitialMessage()
     connect(client_connection, SIGNAL(error(QAbstractSocket::SocketError)),
     this, SLOT(displayError(QAbstractSocket::SocketError)));
 
-    QString message = " Cliente conectado!";
+    QString message = "conectado";
 
     bool ok = false;
     QJsonArray cmd = createStatus(message, ok);
@@ -197,8 +197,6 @@ void JsonCommandServer::BaseServer::sendInitialMessage()
     if (ok) {
         writeMessage(client_connection, cmd);
     }
-
-    writeMessage(client_connection, createIdentify());
 
     addSocket(client_connection);
 }
@@ -601,6 +599,9 @@ void JsonCommandServer::BaseServer::addSocket(QTcpSocket *_socket)
     this->ips_socket_[IP][port] = _socket;
     this->socket_ips_[_socket] = IP;
     this->peers_['@' + IP + ":" + QString::number(port)] = _socket;
+
+    updateInfos();
+    broadcastMessage(createPeerList());
 }
 
 QTcpSocket* JsonCommandServer::BaseServer::getPeer(const QString &_peer)

@@ -100,6 +100,7 @@ void JsonCommandServer::BaseClient::clientClose()
     next_id_ = 0;
 
     ips_info_.clear();
+    peers_.clear();
 
     this->updateInfos();
 
@@ -151,6 +152,7 @@ void JsonCommandServer::BaseClient::clientInit()
 
     client_tcp_socket_ = new QTcpSocket(this);
 
+    connect(client_tcp_socket_, SIGNAL(connected()), this, SLOT(clientIdentify()));
     connect(client_tcp_socket_, SIGNAL(readyRead()), this, SLOT(clientReadMessage()));
     connect(client_tcp_socket_, SIGNAL(error(QAbstractSocket::SocketError)),
     this, SLOT(clientDisplayError(QAbstractSocket::SocketError)));
@@ -189,7 +191,6 @@ void JsonCommandServer::BaseClient::clientRequestNewInitialMessage()
     client_tcp_socket_->abort();
     client_tcp_socket_->connectToHost(myServerIP(),
                                  myServerPort());
-    clientIdentify();
 }
 
 void JsonCommandServer::BaseClient::clientReadMessage()
