@@ -286,6 +286,13 @@ void JsonCommandServer::BaseClient::clientIdentify()
     }
 }
 
+void JsonCommandServer::BaseClient::waitReadyRead()
+{
+    if (client_tcp_socket_) {
+        client_tcp_socket_->waitForReadyRead();
+    }
+}
+
 QJsonArray JsonCommandServer::BaseClient::convertMessage(const QString &message, bool &ok)
 {
     ok = false;

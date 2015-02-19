@@ -79,6 +79,8 @@ public slots:
     virtual void clientSendMessage(const QString& _message);
     void clientIdentify();
 
+    void waitReadyRead();
+
     QString processMessage(const QString& _message);
     void processMessage(QTcpSocket* _socket, const QString& message);
     QJsonArray convertMessage(const QString& message, bool& ok);
