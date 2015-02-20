@@ -44,11 +44,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <set>
 #include <map>
+#include <queue>
 #include <vector>
+#include <QString>
 
 #include "commands_controller.h"
 
 namespace JsonCommandServer {
+
 
 class JSONCOMMANDSERVERSHARED_EXPORT BaseServer : public QObject, public BaseController {
     Q_OBJECT
@@ -134,6 +137,9 @@ public slots:
 
     virtual void updatePeers() = 0;
 
+signals:
+    void dataReceived(QTcpSocket*, const QString&);
+
 protected:
     int newKey();
     void newMessage();
@@ -142,6 +148,9 @@ protected:
     int port_server_;
     QTcpServer* tcp_server_;
     QNetworkSession* network_session_;
+
+    QHash<QTcpSocket*,QByteArray*> buffers_;
+    QHash<QTcpSocket*, qint32*> sizes_;
 
     std::map<QTcpSocket*, QString> clients_test_messages_;
     std::map<QTcpSocket*, QString> socket_ips_;

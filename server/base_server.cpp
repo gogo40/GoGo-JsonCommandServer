@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QTime>
 #include <QtNetwork>
-
+#include <QMessageBox>
 
 static const int N_MAX_SERVER_MESSAGES = 50;
 
@@ -49,6 +49,8 @@ JsonCommandServer::BaseServer::BaseServer(QObject *_parent)
       n_messages_(0),
       n_max_clients_(100)
 {
+
+    connect(this, SIGNAL(dataReceived(QTcpSocket*,QString)), SLOT(processMessage(QTcpSocket*,QString)));
 }
 
 JsonCommandServer::BaseServer::~BaseServer()
@@ -201,43 +203,55 @@ void JsonCommandServer::BaseServer::sendInitialMessage()
     addSocket(client_connection);
 }
 
+void JsonCommandServer::BaseServer::writeMessage(QTcpSocket *_socket, const QString & _message)
+{
+    if (_socket->state() == QAbstractSocket::ConnectedState) {
+        QByteArray data = _message.toLocal8Bit();
+        _socket->write(IntToArray(data.size()));
+        _socket->write(data);
+        //_socket->waitForBytesWritten();
+    }
+}
+
 void JsonCommandServer::BaseServer::receiveMessage()
 {
     QTcpSocket* socket = static_cast<QTcpSocket*>(sender());
 
-    QDataStream in(socket);
-    in.setVersion(QDataStream::Qt_4_0);
-    quint16 block_size = 0;
+    QByteArray* buffer = buffers_.value(socket);
+    qint32* s = sizes_.value(socket);
+    qint32 size = *s;
 
-    if (socket->bytesAvailable() >= (int)sizeof(quint16)) {
-        in >> block_size;
+
+    while (socket->bytesAvailable() > 0) {
+        buffer->append(socket->readAll());
+        bool cond1 = (size == 0 && buffer->size() >= 4);
+        bool cond2 = (size > 0 && buffer->size() >= size);
+
+        while (cond1 || cond2) {
+            if (cond1) {
+                size = ArrayToInt(buffer->mid(0, 4));
+                *s = size;
+                buffer->remove(0, 4);
+                //QMessageBox::warning(0, "PACOTE RECEBIDO SERVIDOR -- ", "SIZE = " + QString::number(size));
+            } else {
+                QByteArray data = buffer->mid(0, size);
+                buffer->remove(0, size);
+                size = 0;
+                *s = size;
+
+                QString message(data.toStdString().c_str());
+
+                //QMessageBox::warning(0, "PACOTE RECEBIDO SERVIDOR", "SIZE = " + QString::number(size) +
+                  //                   "Messagem recebida: {" + message + "}");
+
+                this->addStatusMessage("Messagem recebida: {" + message + "}");
+                emit dataReceived(socket,message);
+            }
+
+            cond1 = (size == 0 && buffer->size() >= 4);
+            cond2 = (size > 0 && buffer->size() >= size);
+        }
     }
-
-    if (socket->bytesAvailable() < block_size) {
-        socket->readAll();
-        return;
-    }
-
-    QString message;
-    QString client_current_message = clients_test_messages_[socket];
-
-    in >> message;
-
-    if (message == client_current_message) {
-        socket->readAll();
-        return;
-    }
-
-    clients_test_messages_[socket] = message;
-    this->addStatusMessage(socket->peerAddress().toString() + ":" +
-                           QString::number(socket->peerPort()) + "> \n" +
-                           message);
-
-    processMessage(socket, message);
-
-    newMessage();
-
-    socket->readAll();
 }
 
 void JsonCommandServer::BaseServer::updateServer()
@@ -387,26 +401,6 @@ QJsonArray JsonCommandServer::BaseServer::convertMessage(const QString &message,
 void JsonCommandServer::BaseServer::writeMessage(QTcpSocket *_socket, const QJsonArray &cmd)
 {
     writeMessage(_socket, QJsonDocument(cmd).toJson());
-}
-
-
-void JsonCommandServer::BaseServer::writeMessage(QTcpSocket *_socket, const QString & _message)
-{
-    if (_socket) {
-        QByteArray block;
-        QDataStream out(&block, QIODevice::WriteOnly);
-
-        out.setVersion(QDataStream::Qt_4_0);
-
-        out << (quint16)0;
-
-        out << _message;
-
-        out.device()->seek(0);
-        out << (quint16)(block.size() - sizeof(quint16));
-
-        _socket->write(block);
-    }
 }
 
 QJsonArray JsonCommandServer::BaseServer::createMessage(const QString &from, const QString &message, bool &ok, int type_message)
@@ -600,6 +594,12 @@ void JsonCommandServer::BaseServer::addSocket(QTcpSocket *_socket)
     this->socket_ips_[_socket] = IP;
     this->peers_['@' + IP + ":" + QString::number(port)] = _socket;
 
+    QByteArray* buffer = new QByteArray;
+    qint32* s = new qint32(0);
+
+    buffers_.insert(_socket, buffer);
+    sizes_.insert(_socket, s);
+
     updateInfos();
     broadcastMessage(createPeerList());
 }
@@ -662,6 +662,15 @@ void JsonCommandServer::BaseServer::eraseSocket(QTcpSocket *_socket)
     this->peers_.erase("@" + IP + ":" + QString::number(port));
     this->peers_.erase(name + "@" + IP + ":" + QString::number(port));
 
+    qint32* s = sizes_.value(_socket);
+    QByteArray* buffer = buffers_.value(_socket);
+
+    delete s;
+    delete buffer;
+
+    buffers_.remove(_socket);
+    sizes_.remove(_socket);
+
     this->updateInfos();
     broadcastMessage(createPeerList());
 }
@@ -699,6 +708,7 @@ void JsonCommandServer::BaseServer::addNewInfo(const RemoteNodeInfo &new_info)
 
     broadcastMessage(createPeerList());
 }
+
 
 int JsonCommandServer::BaseServer::newKey()
 {

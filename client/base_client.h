@@ -79,8 +79,6 @@ public slots:
     virtual void clientSendMessage(const QString& _message);
     void clientIdentify();
 
-    void waitReadyRead();
-
     QString processMessage(const QString& _message);
     void processMessage(QTcpSocket* _socket, const QString& message);
     QJsonArray convertMessage(const QString& message, bool& ok);
@@ -123,6 +121,9 @@ public slots:
 
     virtual void updatePeers() = 0;
 
+signals:
+    void dataReceived(QTcpSocket*, const QString&);
+
 protected:
 
     int newKey();
@@ -132,9 +133,6 @@ protected:
     int client_port_;
     QTcpSocket *client_tcp_socket_;
 
-    QString client_current_message_;
-    quint16 client_block_size_;
-
     QNetworkSession *client_network_session_;
 
     QString server_ip_;
@@ -142,6 +140,9 @@ protected:
 
     int next_id_;
     int n_messages_;
+
+    QByteArray* buffer_;
+    qint32* size_;
 
     std::map<QString, std::map<int, RemoteNodeInfo> > ips_info_;
     QList<QString> peers_;

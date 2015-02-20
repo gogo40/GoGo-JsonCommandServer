@@ -40,10 +40,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QThread>
+#include <QMutex>
 
+#include <queue>
+#include <map>
+
+#include <QTcpSocket>
+#include <QTcpServer>
 
 namespace JsonCommandServer {
 
+inline qint32 ArrayToInt(QByteArray source)
+{
+    qint32 temp;
+    QDataStream data(&source, QIODevice::ReadWrite);
+    data >> temp;
+    return temp;
+}
+
+
+inline QByteArray IntToArray(qint32 source)
+{
+    QByteArray temp;
+    QDataStream data(&temp, QIODevice::ReadWrite);
+    data << source;
+    return temp;
+}
+
+////////////////////////////////////////////////////////////////////////////
 struct JSONCOMMANDSERVERSHARED_EXPORT RemoteNodeInfo {
     RemoteNodeInfo(){}
     ~RemoteNodeInfo(){}
