@@ -34,7 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "client/base_client.h"
 
 #include <QJsonDocument>
-#include <QMessageBox>
+//#include <QMessageBox>
 
 static const int N_MAX_SERVER_MESSAGES = 50;
 
