@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include <server/base_server.h>
+#include "base_server.h"
 
 #include <QTime>
 #include <QtNetwork>

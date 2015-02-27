@@ -35,8 +35,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef JSONCOMMANDSERVER_BASE_SERVER_H
 #define JSONCOMMANDSERVER_BASE_SERVER_H
 
-#include "jsoncommandserver_global.h"
-
 #include <QtNetwork>
 #include <QJsonDocument>
 #include <QJsonObject>

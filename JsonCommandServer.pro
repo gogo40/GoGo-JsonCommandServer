@@ -25,7 +25,9 @@ HEADERS += jsoncommandserver.h\
     client/base_client.h
 
 INCLUDEPATH += server \
-    client
+    client \
+    . \
+    ..
 
 unix {
     target.path = /usr/lib
