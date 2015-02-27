@@ -481,7 +481,7 @@ void JsonCommandServer::BaseClient::processMessage(QTcpSocket *_socket, const QS
             }
 
             cmd.insert("ip", _socket->peerAddress().toString());
-            cmd.insert("port", QString::number(_socket->peerPort()));
+            cmd.insert("port", _socket->peerPort());
 
             if (type == -1) continue;
 
