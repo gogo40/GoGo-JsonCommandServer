@@ -513,6 +513,8 @@ void JsonCommandServer::BaseClient::sendMessageTo(const QString& from, const QSt
             writeMessage(client_tcp_socket_, createMessageTo(from, to, message));
         }
     }
+
+    addClientMessage(from + "-->" + to + " > " + message);
 }
 
 void JsonCommandServer::BaseClient::sendCommandTo(const QString &from, const QString &to, const QJsonArray &cmd)

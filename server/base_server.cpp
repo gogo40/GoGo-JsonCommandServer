@@ -308,7 +308,7 @@ void JsonCommandServer::BaseServer::sendCommandTo(const QString &from, const QSt
         }
     }
 
-    addStatusMessage("cmd "+ from + " --> " + to + " >> " + QJsonDocument(cmd).toJson());
+    //addStatusMessage("cmd "+ from + " --> " + to + " >> " + QJsonDocument(cmd).toJson());
 }
 
 void JsonCommandServer::BaseServer::displayError(QAbstractSocket::SocketError socketError)
