@@ -239,7 +239,7 @@ void JsonCommandServer::BaseServer::receiveMessage()
                 size = 0;
                 *s = size;
 
-                QString message(data.toStdString().c_str());
+                QString message(data);
 
                 //QMessageBox::warning(0, "PACOTE RECEBIDO SERVIDOR", "SIZE = " + QString::number(size) +
                   //                   "Messagem recebida: {" + message + "}");
