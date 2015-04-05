@@ -34,7 +34,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "base_client.h"
 
 #include <QJsonDocument>
-//#include <QMessageBox>
 
 static const int N_MAX_SERVER_MESSAGES = 50;
 
@@ -93,6 +92,7 @@ void JsonCommandServer::BaseClient::clientClose()
         client_tcp_socket_->close();
         delete client_tcp_socket_;
     }
+
     if (client_network_session_) delete client_network_session_;
 
     client_tcp_socket_ = 0;
@@ -139,17 +139,18 @@ void JsonCommandServer::BaseClient::clientInit()
 
     // find out IP addresses of this machine
     QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
+
     // add non-localhost addresses
-    for (int i = 0; i < ipAddressesList.size(); ++i) {
-        if (!ipAddressesList.at(i).isLoopback()) {
-            addStatusMessage(ipAddressesList.at(i).toString());
+    for (auto& addr: ipAddressesList) {
+        if (!addr.isLoopback()) {
+            addStatusMessage(addr.toString());
         }
     }
 
     // add localhost addresses
-    for (int i = 0; i < ipAddressesList.size(); ++i) {
-        if (ipAddressesList.at(i).isLoopback()) {
-            addStatusMessage(ipAddressesList.at(i).toString());
+    for (auto& addr: ipAddressesList) {
+        if (addr.isLoopback()) {
+            addStatusMessage(addr.toString());
         }
     }
 
@@ -203,7 +204,6 @@ void JsonCommandServer::BaseClient::writeMessage(QTcpSocket *_socket, const QStr
         QByteArray data = _message.toLocal8Bit();
         _socket->write(IntToArray(data.size()));
         _socket->write(data);
-        //_socket->waitForBytesWritten();
     }
 }
 
@@ -225,7 +225,6 @@ void JsonCommandServer::BaseClient::clientReadMessage()
                 size = ArrayToInt(buffer->mid(0, 4));
                 *s = size;
                 buffer->remove(0, 4);
-                //QMessageBox::warning(0, "PACOTE RECEBIDO CLIENT -- ", "SIZE = " + QString::number(size));
             } else {
                 QByteArray data = buffer->mid(0, size);
                 buffer->remove(0, size);
@@ -234,10 +233,8 @@ void JsonCommandServer::BaseClient::clientReadMessage()
 
                 QString message(data);
 
-                //QMessageBox::warning(0, "PACOTE RECEBIDO CLIENT", "SIZE = " + QString::number(size) +
-                  //                   "Messagem recebida: {" + message + "}");
-
                 this->addStatusMessage("Messagem recebida: {" + message + "}");
+
                 emit dataReceived(socket,message);
             }
 
@@ -388,8 +385,8 @@ QJsonArray JsonCommandServer::BaseClient::createPeerList()
 
     QJsonArray peers_array;
 
-    for (int i  = 0; i < peers_.size(); ++i) {
-        peers_array.append(peers_[i]);
+    for (auto& peer: peers_) {
+        peers_array.append(peer);
     }
 
     cmd.insert("peers", peers_array);

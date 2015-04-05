@@ -29,6 +29,7 @@ INCLUDEPATH += server \
     . \
     ..
 
+CONFIG   += c++11
 unix {
     target.path = /usr/lib
     INSTALLS += target
