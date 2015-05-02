@@ -47,7 +47,7 @@ namespace JsonCommandServer {
 class JSONCOMMANDSERVERSHARED_EXPORT BaseClient : public QObject, public BaseController {
     Q_OBJECT
 
-public:
+  public:
     BaseClient(QObject* _parent = 0);
     virtual ~BaseClient();
 
@@ -63,7 +63,7 @@ public:
     int myServerPort();
     QString myServerIP();
 
-public slots:
+  public slots:
     /*Client slots*/
 
     virtual void clientConnect();
@@ -119,10 +119,10 @@ public slots:
 
     virtual void updatePeers() = 0;
 
-signals:
+  signals:
     void dataReceived(QTcpSocket*, const QString&);
 
-protected:
+  protected:
 
     int newKey();
     void newMessage();

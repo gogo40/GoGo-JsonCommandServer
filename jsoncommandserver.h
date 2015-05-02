@@ -39,17 +39,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace JsonCommandServer {
 
-class JSONCOMMANDSERVERSHARED_EXPORT JsonCommandServer
-{
+class JSONCOMMANDSERVERSHARED_EXPORT JsonCommandServer {
 
-public:
+  public:
     JsonCommandServer();
     virtual ~JsonCommandServer();
 
     static void executeCommand(int type, BaseController* w, const QJsonObject& cmd);
     static int addCommad(ProcessCmd cmd);
 
-private:
+  private:
     static std::map<int, ProcessCmd> user_process_;
 };
 

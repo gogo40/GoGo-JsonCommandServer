@@ -33,17 +33,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 std::map<int, JsonCommandServer::ProcessCmd> JsonCommandServer::JsonCommandServer::user_process_;
 
-JsonCommandServer::JsonCommandServer::JsonCommandServer()
-{
+JsonCommandServer::JsonCommandServer::JsonCommandServer() {
 }
 
-JsonCommandServer::JsonCommandServer::~JsonCommandServer()
-{
+JsonCommandServer::JsonCommandServer::~JsonCommandServer() {
 
 }
 
-void JsonCommandServer::JsonCommandServer::executeCommand(int type, BaseController *w, const QJsonObject &cmd)
-{
+void JsonCommandServer::JsonCommandServer::executeCommand(int type, BaseController *w, const QJsonObject &cmd) {
 
     if (type < N_CMDS) {
         execute_command(type, w, cmd);
@@ -53,8 +50,7 @@ void JsonCommandServer::JsonCommandServer::executeCommand(int type, BaseControll
     }
 }
 
-int JsonCommandServer::JsonCommandServer::addCommad(ProcessCmd cmd)
-{
+int JsonCommandServer::JsonCommandServer::addCommad(ProcessCmd cmd) {
     int type = N_CMDS + user_process_.size();
 
     user_process_[type] = cmd;

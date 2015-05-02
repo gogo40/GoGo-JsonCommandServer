@@ -51,8 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace JsonCommandServer {
 
-inline qint32 ArrayToInt(QByteArray source)
-{
+inline qint32 ArrayToInt(QByteArray source) {
     qint32 temp;
     QDataStream data(&source, QIODevice::ReadWrite);
     data >> temp;
@@ -60,8 +59,7 @@ inline qint32 ArrayToInt(QByteArray source)
 }
 
 
-inline QByteArray IntToArray(qint32 source)
-{
+inline QByteArray IntToArray(qint32 source) {
     QByteArray temp;
     QDataStream data(&temp, QIODevice::ReadWrite);
     data << source;
@@ -70,8 +68,8 @@ inline QByteArray IntToArray(qint32 source)
 
 ////////////////////////////////////////////////////////////////////////////
 struct JSONCOMMANDSERVERSHARED_EXPORT RemoteNodeInfo {
-    RemoteNodeInfo(){}
-    ~RemoteNodeInfo(){}
+    RemoteNodeInfo() {}
+    ~RemoteNodeInfo() {}
 
     int port;
     int id;
@@ -85,7 +83,7 @@ struct JSONCOMMANDSERVERSHARED_EXPORT RemoteNodeInfo {
 };
 
 class JSONCOMMANDSERVERSHARED_EXPORT BaseController {
-public:
+  public:
     BaseController();
     virtual ~BaseController();
 
@@ -115,20 +113,20 @@ public:
 
 
 namespace DefaultCommands {
-    void print_message(BaseController*, const QJsonObject&);
-    void print_message_status(BaseController*, const QJsonObject&);
-    void print_message_error(BaseController*, const QJsonObject&);
-    void process_identify(BaseController*, const QJsonObject&);
-    void process_peers_list(BaseController*, const QJsonObject&);
-    void send_message_to(BaseController*, const QJsonObject&);
-    void send_cmd_to(BaseController*, const QJsonObject&);
+void print_message(BaseController*, const QJsonObject&);
+void print_message_status(BaseController*, const QJsonObject&);
+void print_message_error(BaseController*, const QJsonObject&);
+void process_identify(BaseController*, const QJsonObject&);
+void process_peers_list(BaseController*, const QJsonObject&);
+void send_message_to(BaseController*, const QJsonObject&);
+void send_cmd_to(BaseController*, const QJsonObject&);
 }
 
 typedef void (*ProcessCmd)(BaseController*, const QJsonObject&);
 
 void JSONCOMMANDSERVERSHARED_EXPORT execute_command(int cmd_type,
-                                                    BaseController* w,
-                                                    const QJsonObject& commad);
+        BaseController* w,
+        const QJsonObject& commad);
 
 
 enum ServerCommands {
