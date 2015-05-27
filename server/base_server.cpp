@@ -48,44 +48,33 @@ JsonCommandServer::BaseServer::BaseServer(QObject *_parent)
       next_key_(0),
       n_messages_(0),
       n_max_clients_(100) {
-
     connect(this, SIGNAL(dataReceived(QTcpSocket*,QString)), SLOT(processMessage(QTcpSocket*,QString)));
 }
 
 JsonCommandServer::BaseServer::~BaseServer() {
-
 }
 
 void JsonCommandServer::BaseServer::initServer() {
     QNetworkConfigurationManager manager;
-
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
         // Get saved network configuration
         QSettings settings(QSettings::UserScope, QLatin1String("MiningControlServer"));
-
         settings.beginGroup(QLatin1String("MiningControlNetwork"));
-
         const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
         settings.endGroup();
-
         // If the saved network configuration is not currently discovered use the system default
         QNetworkConfiguration config = manager.configurationFromIdentifier(id);
-
         if ((config.state() & QNetworkConfiguration::Discovered) !=
                 QNetworkConfiguration::Discovered) {
             config = manager.defaultConfiguration();
         }
-
         network_session_ = new QNetworkSession(config, this);
-
         connect(network_session_, SIGNAL(opened()), this, SLOT(sessionOpened()));
-
         this->addStatusMessage(tr("Opening network session."));
         network_session_->open();
     } else {
         sessionOpened();
     }
-
     connect(tcp_server_, SIGNAL(newConnection()), this, SLOT(sendInitialMessage()));
 }
 
@@ -100,36 +89,27 @@ int JsonCommandServer::BaseServer::myPort() {
 
 void JsonCommandServer::BaseServer::sessionOpened() {
     load();
-
     // Save the used configuration
     if (network_session_) {
         QNetworkConfiguration config = network_session_->configuration();
         QString id;
-
         if (config.type() == QNetworkConfiguration::UserChoice)
             id = network_session_->sessionProperty(QLatin1String("UserChoiceConfiguration")).toString();
         else
             id = config.identifier();
-
         QSettings settings(QSettings::UserScope, QLatin1String("MiningControlServer"));
-
         settings.beginGroup(QLatin1String("MiningControlNetwork"));
         settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
         settings.endGroup();
     }
-
     tcp_server_ = new QTcpServer(this);
-
     if (!tcp_server_->listen(QHostAddress::Any, this->port_server_)) {
         this->addErrorMessage(tr("Não foi possível iniciar o servidor: %1.")
                               .arg(tcp_server_->errorString()));
         return;
     }
-
     ip_address_ = QString();
-
     QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
-
     // use the first non-localhost IPv4 address
     for (int i = 0; i < ipAddressesList.size(); ++i) {
         if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
@@ -141,7 +121,6 @@ void JsonCommandServer::BaseServer::sessionOpened() {
     // if we did not find one, use IPv4 localhost
     if (ip_address_.isEmpty())
         ip_address_ = QHostAddress(QHostAddress::LocalHost).toString();
-
     this->addStatusMessage(tr("O servidor está rodando!\n\nIP: %1\nPorta: %2\n\n"
                               "O sistema já está apto para receber dados dos clientes.")
                            .arg(ip_address_)
@@ -150,49 +129,35 @@ void JsonCommandServer::BaseServer::sessionOpened() {
 
 void JsonCommandServer::BaseServer::sendInitialMessage() {
     QTcpSocket *client_connection = tcp_server_->nextPendingConnection();
-
     this->addStatusMessage("Cliente conectado: " +
                            client_connection->peerName() + "@" +
                            client_connection->peerAddress().toString() +
                            ": " +
                            QString::number(client_connection->peerPort()) +
                            "\n");
-
     connect(client_connection, SIGNAL(disconnected()),
             client_connection, SLOT(deleteLater()));
-
     if (numSockets() >= this->n_max_clients_) {
         QString error_message = "Atingindo numero máximo de clientes suportados!";
         bool ok = false;
-
         this->addErrorMessage(error_message);
-
         QJsonArray cmd = createError(error_message, ok);
-
         if (ok) {
             writeMessage(client_connection, cmd);
         }
-
         client_connection->disconnectFromHost();
         return;
     }
-
-
     connect(client_connection, SIGNAL(readyRead()),
             this, SLOT(receiveMessage()));
-
     connect(client_connection, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SLOT(displayError(QAbstractSocket::SocketError)));
-
     QString message = "conectado";
-
     bool ok = false;
     QJsonArray cmd = createStatus(message, ok);
-
     if (ok) {
         writeMessage(client_connection, cmd);
     }
-
     addSocket(client_connection);
 }
 
@@ -207,17 +172,13 @@ void JsonCommandServer::BaseServer::writeMessage(QTcpSocket *_socket, const QStr
 
 void JsonCommandServer::BaseServer::receiveMessage() {
     QTcpSocket* socket = static_cast<QTcpSocket*>(sender());
-
     QByteArray* buffer = buffers_.value(socket);
     qint32* s = sizes_.value(socket);
     qint32 size = *s;
-
-
     while (socket->bytesAvailable() > 0) {
         buffer->append(socket->readAll());
         bool cond1 = (size == 0 && buffer->size() >= 4);
         bool cond2 = (size > 0 && buffer->size() >= size);
-
         while (cond1 || cond2) {
             if (cond1) {
                 size = ArrayToInt(buffer->mid(0, 4));
@@ -229,16 +190,12 @@ void JsonCommandServer::BaseServer::receiveMessage() {
                 buffer->remove(0, size);
                 size = 0;
                 *s = size;
-
                 QString message(data);
-
                 //QMessageBox::warning(0, "PACOTE RECEBIDO SERVIDOR", "SIZE = " + QString::number(size) +
                 //                   "Messagem recebida: {" + message + "}");
-
                 this->addStatusMessage("Messagem recebida: {" + message + "}");
                 emit dataReceived(socket,message);
             }
-
             cond1 = (size == 0 && buffer->size() >= 4);
             cond2 = (size > 0 && buffer->size() >= size);
         }
@@ -254,18 +211,14 @@ void JsonCommandServer::BaseServer::updateServer() {
 
 void JsonCommandServer::BaseServer::closeServer() {
     this->clearMessages();
-
     clients_test_messages_.clear();
     ips_info_.clear();
     ips_socket_.clear();
     socket_ips_.clear();
     peers_.clear();
-
     this->updateInfos();
-
     if (tcp_server_) delete tcp_server_;
     if (network_session_) delete network_session_;
-
     tcp_server_ = 0;
     network_session_ = 0;
     next_key_ = 0;
@@ -281,7 +234,6 @@ void JsonCommandServer::BaseServer::sendMessageTo(const QString& from, const QSt
             writeMessage(socket, createMessage(from, message, ok));
         }
     }
-
     addClientMessage(from + " --> " + to + "> " + message);
 }
 
@@ -294,15 +246,12 @@ void JsonCommandServer::BaseServer::sendCommandTo(const QString &from, const QSt
             writeMessage(socket, cmd);
         }
     }
-
     //addStatusMessage("cmd "+ from + " --> " + to + " >> " + QJsonDocument(cmd).toJson());
 }
 
 void JsonCommandServer::BaseServer::displayError(QAbstractSocket::SocketError socketError) {
     QTcpSocket* socket = static_cast<QTcpSocket*>(sender());
-
     eraseSocket(socket);
-
     switch (socketError) {
     case QAbstractSocket::RemoteHostClosedError:
         this->addErrorMessage(tr("%1 fechou a conexão.")
@@ -338,23 +287,18 @@ void JsonCommandServer::BaseServer::displayError(QAbstractSocket::SocketError so
 void JsonCommandServer::BaseServer::processMessage(QTcpSocket* _socket, const QString &message) {
     bool ok;
     QJsonArray cmds = convertMessage(message, ok);
-
     if (ok) {
         for (int i  = 0; i < cmds.size(); ++i) {
             QJsonObject cmd = cmds[i].toObject();
             int type = -1;
-
             if (cmd.contains("type")) {
                 type = cmd["type"].toInt();
             } else {
                 continue;
             }
-
             cmd.insert("ip", _socket->peerAddress().toString());
             cmd.insert("port", _socket->peerPort());
-
             if (type == -1) continue;
-
             if (type == CLOSE) {
                 eraseSocket(_socket);
                 _socket->disconnectFromHost();
@@ -390,7 +334,6 @@ QJsonArray JsonCommandServer::BaseServer::createMessage(const QString &from, con
     ok = true;
     QJsonArray out;
     QJsonObject cmd;
-
     if (message == "close") {
         cmd.insert("type", CLOSE);
     } else {
@@ -406,9 +349,7 @@ QJsonArray JsonCommandServer::BaseServer::createMessage(const QString &from, con
         cmd.insert("type_client", this->type());
         cmd.insert("message", message);
     }
-
     out.append(cmd);
-
     return out;
 }
 
@@ -417,11 +358,9 @@ QJsonArray JsonCommandServer::BaseServer::createMessage(const QString &message, 
     ok = true;
     QJsonArray out;
     QJsonObject cmd;
-
     if (message == "close") {
         cmd.insert("type", CLOSE);
     } else {
-
         cmd.insert("id", newKey());
         cmd.insert("ip", this->myIP());
         cmd.insert("port", this->myPort());
@@ -434,9 +373,7 @@ QJsonArray JsonCommandServer::BaseServer::createMessage(const QString &message, 
         cmd.insert("type_client", this->type());
         cmd.insert("message", message);
     }
-
     out.append(cmd);
-
     return out;
 }
 
@@ -452,31 +389,24 @@ QJsonArray JsonCommandServer::BaseServer::createPeerList() {
     QJsonArray out;
     QJsonObject cmd;
     QList<QString> peers = getPeers();
-
     cmd.insert("id", newKey());
     cmd.insert("ip", this->myIP());
     cmd.insert("port", this->myPort());
     cmd.insert("type", MESSAGE_PEER_LIST);
     cmd.insert("time", QTime::currentTime().toString());
     cmd.insert("date", QDate::currentDate().toString());
-
     QJsonArray peers_array;
-
     for (int i  = 0; i < peers.size(); ++i) {
         peers_array.append(peers[i]);
     }
-
     cmd.insert("peers", peers_array);
-
     out.append(cmd);
-
     return out;
 }
 
 QJsonArray JsonCommandServer::BaseServer::createIdentify() {
     QJsonArray out;
     QJsonObject cmd;
-
     cmd.insert("id", newKey());
     cmd.insert("ip", this->myIP());
     cmd.insert("port", this->myPort());
@@ -488,16 +418,13 @@ QJsonArray JsonCommandServer::BaseServer::createIdentify() {
     cmd.insert("name_client", this->name());
     cmd.insert("type_client", this->type());
     cmd.insert("description_client", this->description());
-
     out.append(cmd);
-
     return out;
 }
 
 QJsonArray JsonCommandServer::BaseServer::createMessageTo(const QString &from, const QString &to, const QString &message) {
     QJsonArray out;
     QJsonObject cmd;
-
     cmd.insert("id", newKey());
     cmd.insert("ip", this->myIP());
     cmd.insert("port", this->myPort());
@@ -512,7 +439,6 @@ QJsonArray JsonCommandServer::BaseServer::createMessageTo(const QString &from, c
     cmd.insert("from", from);
     cmd.insert("to", to);
     cmd.insert("message", message);
-
     out.append(cmd);
     return out;
 }
@@ -520,7 +446,6 @@ QJsonArray JsonCommandServer::BaseServer::createMessageTo(const QString &from, c
 QJsonArray JsonCommandServer::BaseServer::createCommandTo(const QString &from, const QString &to, const QJsonArray & _cmd) {
     QJsonArray out;
     QJsonObject cmd;
-
     cmd.insert("id", newKey());
     cmd.insert("ip", this->myIP());
     cmd.insert("port", this->myPort());
@@ -535,13 +460,11 @@ QJsonArray JsonCommandServer::BaseServer::createCommandTo(const QString &from, c
     cmd.insert("from", from);
     cmd.insert("to", to);
     cmd.insert("cmd", _cmd);
-
     out.append(cmd);
     return out;
 }
 
 void JsonCommandServer::BaseServer::executeCommand(const QJsonArray &cmd) {
-
 }
 
 void JsonCommandServer::BaseServer::setPortServer(int _port_server) {
@@ -559,17 +482,13 @@ void JsonCommandServer::BaseServer::addSocketMessage(QTcpSocket *_socket, const 
 void JsonCommandServer::BaseServer::addSocket(QTcpSocket *_socket) {
     QString IP = _socket->peerAddress().toString();
     int port = _socket->peerPort();
-
     this->ips_socket_[IP][port] = _socket;
     this->socket_ips_[_socket] = IP;
     this->peers_['@' + IP + ":" + QString::number(port)] = _socket;
-
     QByteArray* buffer = new QByteArray;
     qint32* s = new qint32(0);
-
     buffers_.insert(_socket, buffer);
     sizes_.insert(_socket, s);
-
     updateInfos();
     broadcastMessage(createPeerList());
 }
@@ -583,11 +502,9 @@ QTcpSocket* JsonCommandServer::BaseServer::getPeer(const QString &_peer) {
 
 QList<QString> JsonCommandServer::BaseServer::getPeers() {
     QList<QString> list;
-
     for (std::map<QString, QTcpSocket*>::iterator it = peers_.begin(); it != peers_.end(); ++it) {
         list.push_back(it->first);
     }
-
     return list;
 }
 
@@ -609,33 +526,25 @@ void JsonCommandServer::BaseServer::eraseSocket(QTcpSocket *_socket) {
     QString IP = _socket->peerAddress().toString();
     QString name = "";
     int port = _socket->peerPort();
-
     this->clients_test_messages_.erase(_socket);
     this->socket_ips_.erase(_socket);
-
     this->ips_socket_[IP].erase(port);
     if (this->ips_socket_[IP].size() == 0) {
         this->ips_socket_.erase(IP);
     }
-
     name = ips_info_[IP][port].name;
     this->ips_info_[IP].erase(port);
     if (this->ips_info_[IP].size() == 0) {
         this->ips_info_.erase(IP);
     }
-
     this->peers_.erase("@" + IP + ":" + QString::number(port));
     this->peers_.erase(name + "@" + IP + ":" + QString::number(port));
-
     qint32* s = sizes_.value(_socket);
     QByteArray* buffer = buffers_.value(_socket);
-
     delete s;
     delete buffer;
-
     buffers_.remove(_socket);
     sizes_.remove(_socket);
-
     this->updateInfos();
     broadcastMessage(createPeerList());
 }
@@ -650,7 +559,6 @@ void JsonCommandServer::BaseServer::setNMaxClients(int _n_max_clients) {
 
 void JsonCommandServer::BaseServer::addNewInfo(const RemoteNodeInfo &new_info) {
     RemoteNodeInfo& info = ips_info_[new_info.IP][new_info.port];
-
     info.date = new_info.date;
     info.description = new_info.description;
     info.group = new_info.group;
@@ -660,14 +568,10 @@ void JsonCommandServer::BaseServer::addNewInfo(const RemoteNodeInfo &new_info) {
     info.port = new_info.port;
     info.time = new_info.time;
     info.type = new_info.type;
-
     this->peers_.erase("@" + info.IP + ":" + QString::number(info.port));
     this->peers_[info.name + "@" + info.IP + ":" + QString::number(info.port)] =
         ips_socket_[info.IP][info.port];
-
-
     this->updateInfos();
-
     broadcastMessage(createPeerList());
 }
 
@@ -679,7 +583,6 @@ int JsonCommandServer::BaseServer::newKey() {
 
 void JsonCommandServer::BaseServer::newMessage() {
     ++n_messages_;
-
     if (n_messages_ > N_MAX_SERVER_MESSAGES) {
         n_messages_ = 0;
         this->clearMessages();

@@ -37,11 +37,9 @@ JsonCommandServer::JsonCommandServer::JsonCommandServer() {
 }
 
 JsonCommandServer::JsonCommandServer::~JsonCommandServer() {
-
 }
 
 void JsonCommandServer::JsonCommandServer::executeCommand(int type, BaseController *w, const QJsonObject &cmd) {
-
     if (type < N_CMDS) {
         execute_command(type, w, cmd);
     } else if (user_process_.find(type) != user_process_.end()) {
@@ -52,9 +50,7 @@ void JsonCommandServer::JsonCommandServer::executeCommand(int type, BaseControll
 
 int JsonCommandServer::JsonCommandServer::addCommad(ProcessCmd cmd) {
     int type = N_CMDS + user_process_.size();
-
     user_process_[type] = cmd;
-
     return type;
 }
 
