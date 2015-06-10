@@ -48,7 +48,7 @@ void JsonCommandServer::JsonCommandServer::executeCommand(int type, BaseControll
     }
 }
 
-int JsonCommandServer::JsonCommandServer::addCommad(ProcessCmd cmd) {
+int JsonCommandServer::JsonCommandServer::addCommand(ProcessCmd cmd) {
     int type = N_CMDS + user_process_.size();
     user_process_[type] = cmd;
     return type;
