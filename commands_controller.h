@@ -87,28 +87,33 @@ class JSONCOMMANDSERVERSHARED_EXPORT BaseController {
     BaseController();
     virtual ~BaseController();
 
-    virtual QJsonArray createMessage(const QString &message, bool &ok, int type_message) = 0;
-    virtual QJsonArray createStatus(const QString &message, bool &ok) = 0;
-    virtual QJsonArray createError(const QString &message, bool &ok) = 0;
-    virtual QJsonArray createIdentify() = 0;
-    virtual QJsonArray createPeerList() = 0;
-    virtual QJsonArray createMessageTo(const QString& from, const QString& to, const QString &message) = 0;
-    virtual QJsonArray createCommandTo(const QString& from, const QString& to, const QJsonArray &cmd) = 0;
+    virtual QJsonArray createMessage(const QString &message, bool &ok, int type_message)
+    { return QJsonArray(); }
+    virtual QJsonArray createStatus(const QString &message, bool &ok)
+    { return QJsonArray(); }
+    virtual QJsonArray createError(const QString &message, bool &ok)
+    { return QJsonArray(); }
+    virtual QJsonArray createIdentify() { return QJsonArray(); }
+    virtual QJsonArray createPeerList() { return QJsonArray(); }
+    virtual QJsonArray createMessageTo(const QString& from, const QString& to, const QString &message)
+    { return QJsonArray(); }
+    virtual QJsonArray createCommandTo(const QString& from, const QString& to, const QJsonArray &cmd)
+    { return QJsonArray(); }
 
-    virtual void addClientMessage(const QString& message) = 0;
-    virtual void addStatusMessage(const QString& message) = 0;
-    virtual void addErrorMessage(const QString& message) = 0;
-    virtual void addIdentify(const QJsonObject& info) = 0;
-    virtual void executeCommand(const QJsonArray& cmd) = 0;
+    virtual void addClientMessage(const QString& message) {}
+    virtual void addStatusMessage(const QString& message) {}
+    virtual void addErrorMessage(const QString& message) {}
+    virtual void addIdentify(const QJsonObject& info) {}
+    virtual void executeCommand(const QJsonArray& cmd) {}
 
-    virtual void sendMessageTo(const QString& from, const QString& to, const QString& message) = 0;
-    virtual void sendCommandTo(const QString& from, const QString& to, const QJsonArray& cmd) = 0;
+    virtual void sendMessageTo(const QString& from, const QString& to, const QString& message) {}
+    virtual void sendCommandTo(const QString& from, const QString& to, const QJsonArray& cmd) {}
 
-    virtual void addNewInfo(const RemoteNodeInfo& new_info) = 0;
-    virtual void updateInfos() = 0;
+    virtual void addNewInfo(const RemoteNodeInfo& new_info) {}
+    virtual void updateInfos() {}
 
-    virtual void addPeerList(const QList<QString>& peers) = 0;
-    virtual void updatePeers() = 0;
+    virtual void addPeerList(const QList<QString>& peers) {}
+    virtual void updatePeers() {}
 };
 
 

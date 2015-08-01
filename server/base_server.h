@@ -60,17 +60,17 @@ class JSONCOMMANDSERVERSHARED_EXPORT BaseServer : public QObject, public BaseCon
 
     virtual void initServer();
 
-    virtual QString name() = 0;
-    virtual QString type() = 0;
-    virtual int id() = 0;
-    virtual int group() = 0;
-    virtual QString description() = 0;
+    virtual QString name() { return ""; }
+    virtual QString type() { return ""; }
+    virtual int id() { return 0; }
+    virtual int group() { return 0; }
+    virtual QString description() { return ""; }
 
-    virtual QJsonArray serialize() = 0;
-    virtual void unserialize(const QJsonArray& _json) = 0;
+    virtual QJsonArray serialize() { return QJsonArray(); }
+    virtual void unserialize(const QJsonArray& _json) {}
 
-    virtual void save() = 0;
-    virtual void load() = 0;
+    virtual void save() {}
+    virtual void load() {}
 
     QString myIP();
     int myPort();
@@ -83,16 +83,16 @@ class JSONCOMMANDSERVERSHARED_EXPORT BaseServer : public QObject, public BaseCon
     virtual void updateServer();
     void closeServer();
 
-    virtual void addClientMessage(const QString& message) = 0;
-    virtual void addStatusMessage(const QString& message) = 0;
-    virtual void addErrorMessage(const QString& message) = 0;
-    virtual void addIdentify(const QJsonObject& info) = 0;
-    virtual void addPeerList(const QList<QString>& peers) = 0;
+    virtual void addClientMessage(const QString& message) {}
+    virtual void addStatusMessage(const QString& message) {}
+    virtual void addErrorMessage(const QString& message) {}
+    virtual void addIdentify(const QJsonObject& info) {}
+    virtual void addPeerList(const QList<QString>&) {}
 
     virtual void sendMessageTo(const QString& from, const QString& to, const QString& message);
     virtual void sendCommandTo(const QString& from, const QString& to, const QJsonArray& cmd);
 
-    virtual void clearMessages() = 0;
+    virtual void clearMessages() {}
 
     void displayError(QAbstractSocket::SocketError socketError);
 
@@ -131,9 +131,9 @@ class JSONCOMMANDSERVERSHARED_EXPORT BaseServer : public QObject, public BaseCon
     void setNMaxClients(int _n_max_clients);
 
     virtual void addNewInfo(const RemoteNodeInfo& new_info);
-    virtual void updateInfos() = 0;
+    virtual void updateInfos() {}
 
-    virtual void updatePeers() = 0;
+    virtual void updatePeers() {}
 
   signals:
     void dataReceived(QTcpSocket*, const QString&);
