@@ -48,6 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QTcpSocket>
 #include <QTcpServer>
+#include <QDataStream>
 
 namespace JsonCommandServer {
 
