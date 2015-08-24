@@ -46,7 +46,7 @@ class JSONCOMMANDSERVERSHARED_EXPORT JsonCommandServer {
     virtual ~JsonCommandServer();
 
     static void executeCommand(int type, BaseController* w, const QJsonObject& cmd);
-    static int addCommand(ProcessCmd cmd);
+    static int addCommand(ProcessCmd cmd, int ID = 0);
 
   private:
     static std::map<int, ProcessCmd> user_process_;
